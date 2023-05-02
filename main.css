@@ -30,13 +30,19 @@ a {
   color: #444444;
 }
 
+/* Set up the paragraph text */
 p {
+  font-size: 16px; /* Set the font size */
+  line-height: 1.5; /* Set the line height */
+}
+
+/* p {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   margin-bottom: 1.5em;
   color: #333;
-}
+} */
 
 .footer-element {
   text-align: left;
