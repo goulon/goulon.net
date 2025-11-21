@@ -1,37 +1,45 @@
-html * {
-  font-size: 1rem;
-  list-style: none;
-  margin: 0.5rem;
-  line-height: 1.5;
+* {
+  box-sizing: border-box;
+  margin: 0rem;
 }
 
 body {
-  background-color: #232629;
-  color: #ECECEC;
-  font-family: 'Courier New', Arial, sans-serif;
+  background-color: #002654;
+  color: #FFFFFF;
+  font-family: 'Courier New', Courier, monospace, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
   margin: 1rem;
 }
 
-h2, h3 {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+h2 {
+  color: #FFFFFF;
   font-size: 2rem;
   font-weight: normal;
+  line-height: 1.2;
+  margin-bottom: 1em;
+  text-decoration: underline;
+  text-decoration-color: #EF4135;
+  text-decoration-thickness: 0.1em;
+  text-underline-offset: 0.2em;
 }
-h2 {
-  color:#881c32;
-}
+
 h3 {
-  color: #B5EAFF;
-  font-size: 1.25rem;
+  color: #FFFFFF;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 2;
 }
 
 p {
-  font-size: 1rem; /* Set the font size */
-  line-height: 1.5; /* Set the line height */
-  color: #ddd;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 1em;
 }
 
 a {
+  color: #FFFFFF;
   margin: 0;
-  color: #ddd;
 }
