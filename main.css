@@ -1,5 +1,4 @@
 html * {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 1rem;
   list-style: none;
   margin: 0.5rem;
@@ -7,16 +6,23 @@ html * {
 }
 
 body {
-  background-color: #333;
-  color: #ddd;
+  background-color: #232629;
+  color: #ECECEC;
+  font-family: 'Courier New', Arial, sans-serif;
   margin: 1rem;
 }
 
-h2 {
-  color: #fff;
-  font-weight: normal;
+h2, h3 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 2rem;
-  /* text-shadow: 2px 2px 4px #000; */
+  font-weight: normal;
+}
+h2 {
+  color:#881c32;
+}
+h3 {
+  color: #B5EAFF;
+  font-size: 1.25rem;
 }
 
 p {
