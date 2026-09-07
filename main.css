@@ -10,10 +10,11 @@ body {
   font-size: 1rem;
   font-weight: 500;
   line-height: 1.5;
-  margin: 1rem;
+  margin: 1rem auto;
+  max-width: 40em;
 }
 
-h2 {
+h1 {
   color: #FFFFFF;
   font-size: 2rem;
   font-weight: normal;
@@ -25,7 +26,7 @@ h2 {
   text-underline-offset: 0.2em;
 }
 
-h3 {
+h2 {
   color: #FFFFFF;
   font-size: 1.5rem;
   font-weight: 600;
@@ -41,11 +42,15 @@ p {
 }
 
 li {
-  line-height: 1;
+  line-height: 1.5;
   margin-bottom: 1em;
 }
 
 a {
   color: #FFFFFF;
+  text-decoration-color: #EF4135;
+  text-decoration-thickness: 0.1em;
+  text-underline-offset: 0.2em;
   margin: 0;
 }
+
