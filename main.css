@@ -1,56 +1,105 @@
-* {
+:root {
+  /* Colours */
+  --color-bg: #002654;
+  --color-text: #ffffff;
+  --color-accent: #ef4135;
+  --color-focus: #ffffff;
+
+  /* Typography */
+  --font-body: "Courier New", Courier, monospace;
+  --font-size-base: 1rem;
+  --line-height-base: 1.5;
+
+  /* Layout and spacing */
+  --content-width: 40rem;
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+
+  /* Underline/link treatment */
+  --accent-underline-thickness: 0.1em;
+  --accent-underline-offset: 0.2em;
+}
+
+/* Prefer a targeted reset over resetting margin on every element */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  margin: 0rem;
 }
 
-body {
-  background-color: #002654;
-  color: #FFFFFF;
-  font-family: 'Courier New', Courier, monospace, Arial, sans-serif;
-  font-size: 1rem;
-  font-weight: 500;
-  line-height: 1.5;
-  margin: 1rem auto;
-  max-width: 40em;
-}
-
-h1 {
-  color: #FFFFFF;
-  font-size: 2rem;
-  font-weight: normal;
-  line-height: 1.2;
-  margin-bottom: 1em;
-  text-decoration: underline;
-  text-decoration-color: #EF4135;
-  text-decoration-thickness: 0.1em;
-  text-underline-offset: 0.2em;
-}
-
-h2 {
-  color: #FFFFFF;
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 2;
-  margin-top: 1.5em;
-}
-
-p {
-  font-size: 1rem;
-  font-weight: 500;
-  line-height: 1.5;
-  margin-bottom: 1em;
-}
-
-li {
-  line-height: 1.5;
-  margin-bottom: 1em;
-}
-
-a {
-  color: #FFFFFF;
-  text-decoration-color: #EF4135;
-  text-decoration-thickness: 0.1em;
-  text-underline-offset: 0.2em;
+body,
+h1,
+h2,
+p,
+ul,
+ol {
   margin: 0;
 }
 
+body {
+  max-width: var(--content-width);
+  margin-inline: auto;
+  padding: var(--space-2);
+
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  line-height: var(--line-height-base);
+}
+
+h1 {
+  margin-bottom: var(--space-2);
+
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+h2 {
+  margin-top: var(--space-3);
+
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+p,
+li {
+  margin-bottom: var(--space-2);
+
+  line-height: var(--line-height-base);
+}
+
+/*
+  Shared accent underline utility/group.
+  :where() gives this selector zero specificity, so a more specific
+  component rule can override it easily later.
+*/
+:where(h1, a) {
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: var(--accent-underline-thickness);
+  text-underline-offset: var(--accent-underline-offset);
+}
+
+a:any-link {
+  color: inherit;
+}
+
+a:hover {
+  color: var(--color-accent);
+  text-decoration-thickness: 0.15em;
+}
+
+a:focus-visible {
+  outline: 0.15rem solid var(--color-focus);
+  outline-offset: 0.2rem;
+  border-radius: 0.1rem;
+}
+
+a:active {
+  color: var(--color-accent);
+}
