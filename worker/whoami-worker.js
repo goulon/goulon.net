@@ -6,14 +6,15 @@
  *   2. GET /         → serve a short plain-text card to curl/wget/HTTPie,
  *                      normal HTML to browsers (content negotiation)
  *
- * Everything else falls through to the GitHub Pages origin untouched.
+ * Everything else — including non-GET requests to the two paths above —
+ * falls through to the GitHub Pages origin untouched.
  *
  * Route: aurelien.goulon.net/*
  */
 
 const SITE = "https://aurelien.goulon.net";
 
-/* ── helpers ──────────────────────────────────────────────────────── */
+/* ── escaping ─────────────────────────────────────────────────────── */
 
 const esc = (s) =>
   String(s ?? "").replace(
@@ -21,6 +22,17 @@ const esc = (s) =>
     (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
   );
+
+/**
+ * Tagged template for HTML fragments that mix trusted, hand-written markup
+ * with dynamic values: the literal parts pass through untouched, every
+ * `${...}` interpolation is escaped automatically. Use this instead of a
+ * plain template literal anywhere a dynamic value (especially anything
+ * client-supplied, like a header) ends up inside HTML — it removes the
+ * need to remember `esc()` at each interpolation site.
+ */
+const html = (strings, ...values) =>
+  strings.reduce((out, s, i) => out + s + (i < values.length ? esc(values[i]) : ""), "");
 
 const isTerminalClient = (ua) =>
   /^(curl|Wget|HTTPie|got|python-requests|fetch)\b/i.test(ua.trim());
@@ -133,17 +145,19 @@ function whoamiHtml(f) {
     server you visit can see.
   </p>
 
-${row("Your address", f.ip, `This is <strong>${esc(f.ipVersion)}</strong>. ${f.ipVersion === "IPv6" ? "Good — you are on the modern internet. Most people still aren’t." : "The original 1981 addressing scheme. We ran out of these in 2011 and have been improvising ever since."}`)}
+${row("Your address", f.ip, html`This is <strong>${f.ipVersion}</strong>. ${f.ipVersion === "IPv6" ? "Good — you are on the modern internet. Most people still aren’t." : "The original 1981 addressing scheme. We ran out of these in 2011 and have been improvising ever since."}`)}
 
-${row("Your network", `${f.asn} — ${f.asOrg}`, "An <em>autonomous system</em>: one organisation’s slice of the internet. There are roughly 75,000 of them, and they spend all day telling each other which addresses they can reach. That constant negotiation is BGP, and it is the closest thing the internet has to a nervous system.")}
+${row("Your network", `${f.asn} — ${f.asOrg}`, html`An <em>autonomous system</em>: one organisation’s slice of the internet. There are roughly 75,000 of them, and they spend all day telling each other which addresses they can reach. That constant negotiation is BGP, and it is the closest thing the internet has to a nervous system.`)}
 
-${row("You reached", f.colo + (f.city ? ` — you look like ${f.city}${f.region ? ", " + f.region : ""}` : ""), "The nearest edge location that answered you, out of hundreds worldwide. You didn’t pick it; routing did.")}
+${row("You reached", f.colo + (f.city ? ` — you look like ${f.city}${f.region ? ", " + f.region : ""}` : ""), html`The nearest edge location that answered you, out of hundreds worldwide. You didn’t pick it; routing did.`)}
 
-${row("Protocol", f.httpProtocol, f.httpProtocol.includes("3") ? "HTTP/3 — running over QUIC on UDP rather than TCP. Faster to set up, and it survives switching from Wi-Fi to cellular without dropping." : f.httpProtocol.includes("2") ? "HTTP/2 — many requests multiplexed over one connection instead of queued one behind the other." : "HTTP/1.1, from 1997. Still works.")}
+${row("Protocol", f.httpProtocol, html`${f.httpProtocol.includes("3") ? "HTTP/3 — running over QUIC on UDP rather than TCP. Faster to set up, and it survives switching from Wi-Fi to cellular without dropping." : f.httpProtocol.includes("2") ? "HTTP/2 — many requests multiplexed over one connection instead of queued one behind the other." : "HTTP/1.1, from 1997. Still works."}`)}
 
-${row("Encryption", `${f.tlsVersion} · ${f.tlsCipher}`, "Negotiated in the first fraction of a second, before a single byte of this page moved. Nobody between us can read it.")}
+${row("Encryption", `${f.tlsVersion} · ${f.tlsCipher}`, html`Negotiated in the first fraction of a second, before a single byte of this page moved. Nobody between us can read it.`)}
 
-${f.rtt ? row("Round trip", `~${f.rtt} ms`, "How long a packet takes to get from you to the edge and back. Light in fibre covers about 200 km per millisecond.") : ""}
+${f.rtt ? row("Round trip", `~${f.rtt} ms`, html`How long a packet takes to get from you to the edge and back. Light in fibre covers about 200 km per millisecond.`) : ""}
+
+${row("Your client", f.ua, html`The identifying string your browser or client sends with every request. It’s entirely self-reported — nothing on the wire verifies it, so it’s also the easiest of these facts to fake.`)}
 
   <p class="outro">
     None of this is logged or stored. It is read off the live connection and
@@ -161,29 +175,35 @@ ${f.rtt ? row("Round trip", `~${f.rtt} ms`, "How long a packet takes to get from
 
 /* ── plain-text card, for people who arrive by terminal ───────────── */
 
+const BOX_WIDTH = 64; // inner width between the │ borders, in characters
+
+const boxLine = (content = "") => `  │${content.padEnd(BOX_WIDTH)}│`;
+const boxBorder = (side) =>
+  `  ${side === "top" ? "┌" : "└"}${"─".repeat(BOX_WIDTH)}${side === "top" ? "┐" : "┘"}`;
+
 const CARD = `
-  ┌────────────────────────────────────────────────────────────────┐
-  │                                                                │
-  │   AURÉLIEN GOULON                                              │
-  │   Software Engineer — network infrastructure                   │
-  │                                                                │
-  │   I work where networking meets software: routing protocols,   │
-  │   switching, and the APIs behind enterprise network            │
-  │   management at Cisco Meraki.                                  │
-  │                                                                │
-  │   Since 2014, on three continents — France, Brazil, Canada.    │
-  │   Currently in Alberta.                                        │
-  │                                                                │
-  │   Web       ${SITE.padEnd(51)}│
-  │   Humans    ${(SITE + "/humans.txt").padEnd(51)}│
-  │                                                                │
-  │   You asked for this in plain text, so here it is. If you      │
-  │   want to see what your own connection looks like from my      │
-  │   side of the wire:                                            │
-  │                                                                │
-  │       curl ${(SITE + "/whoami").padEnd(52)}│
-  │                                                                │
-  └────────────────────────────────────────────────────────────────┘
+${boxBorder("top")}
+${boxLine()}
+${boxLine("   AURÉLIEN GOULON")}
+${boxLine("   Software Engineer — network infrastructure")}
+${boxLine()}
+${boxLine("   I work where networking meets software: routing protocols,")}
+${boxLine("   switching, and the APIs behind enterprise network")}
+${boxLine("   management at Cisco Meraki.")}
+${boxLine()}
+${boxLine("   Since 2014, on three continents — France, Brazil, Canada.")}
+${boxLine("   Currently in Alberta.")}
+${boxLine()}
+${boxLine(`   Web       ${SITE}`)}
+${boxLine(`   Humans    ${SITE}/humans.txt`)}
+${boxLine()}
+${boxLine("   You asked for this in plain text, so here it is. If you")}
+${boxLine("   want to see what your own connection looks like from my")}
+${boxLine("   side of the wire:")}
+${boxLine()}
+${boxLine(`       curl ${SITE}/whoami`)}
+${boxLine()}
+${boxBorder("bottom")}
 
 `;
 
@@ -193,6 +213,7 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, "") || "/";
+    const method = request.method;
     const ua = request.headers.get("User-Agent") ?? "";
     const accept = request.headers.get("Accept") ?? "";
 
@@ -201,8 +222,8 @@ export default {
       "X-Say-Hello": `${SITE}/humans.txt`,
     };
 
-    /* 1. /whoami */
-    if (path === "/whoami") {
+    /* 1. GET /whoami */
+    if (path === "/whoami" && method === "GET") {
       const facts = connectionFacts(request);
       const wantsText =
         isTerminalClient(ua) ||
@@ -222,8 +243,8 @@ export default {
       );
     }
 
-    /* 2. Homepage content negotiation — plain text for terminals */
-    if (path === "/" && isTerminalClient(ua)) {
+    /* 2. GET / — content negotiation: plain text for terminals */
+    if (path === "/" && method === "GET" && isTerminalClient(ua)) {
       return new Response(CARD, {
         headers: {
           "Content-Type": "text/plain; charset=utf-8",
@@ -234,9 +255,22 @@ export default {
     }
 
     /* 3. Everything else → GitHub Pages, with the extra headers bolted on */
-    const response = await fetch(request);
-    const out = new Response(response.body, response);
-    for (const [k, v] of Object.entries(commonHeaders)) out.headers.set(k, v);
-    return out;
+    try {
+      const response = await fetch(request);
+      const out = new Response(response.body, response);
+      for (const [k, v] of Object.entries(commonHeaders)) out.headers.set(k, v);
+      return out;
+    } catch (err) {
+      return new Response(
+        "502 Bad Gateway\n\nThe origin for this request couldn't be reached.\n",
+        {
+          status: 502,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            ...commonHeaders,
+          },
+        },
+      );
+    }
   },
 };
