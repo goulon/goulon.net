@@ -4,18 +4,15 @@
   --color-text: #ffffff;
   --color-accent: #ef4135;
   --color-focus: #ffffff;
-
   /* Typography */
   --font-body: "Courier New", Courier, monospace;
   --font-size-base: 1rem;
   --line-height-base: 1.5;
-
   /* Layout and spacing */
   --content-width: 40rem;
   --space-1: 0.5rem;
   --space-2: 1rem;
   --space-3: 1.5rem;
-
   /* Underline/link treatment */
   --accent-underline-thickness: 0.1em;
   --accent-underline-offset: 0.2em;
@@ -41,7 +38,6 @@ body {
   max-width: var(--content-width);
   margin-inline: auto;
   padding: var(--space-2);
-
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
@@ -52,7 +48,6 @@ body {
 
 h1 {
   margin-bottom: var(--space-2);
-
   font-size: 2rem;
   font-weight: 400;
   line-height: 1.2;
@@ -60,7 +55,6 @@ h1 {
 
 h2 {
   margin-top: var(--space-3);
-
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.35;
@@ -69,7 +63,6 @@ h2 {
 p,
 li {
   margin-bottom: var(--space-2);
-
   line-height: var(--line-height-base);
 }
 
@@ -103,7 +96,6 @@ a:focus-visible {
 a:active {
   color: var(--color-accent);
 }
-/* ── Append this to the end of main.css ─────────────────────────────── */
 
 footer {
   margin-top: calc(var(--space-3) * 2);
@@ -113,7 +105,6 @@ footer {
 
 footer p {
   margin-bottom: 0;
-
   font-size: 0.875rem;
   opacity: 0.75;
 }

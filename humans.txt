@@ -15,7 +15,7 @@
 /* COLOPHON */
 
     This page is hand-written HTML served over HTTP/2 and HTTP/3, on
-    IPv4 and IPv6. The stylesheet is under 130 lines. Nothing is minified
+    IPv4 and IPv6. The stylesheet is 110 lines. Nothing is minified
     because nothing needed to be.
 
     Palette: #002654 navy, #FFFFFF white, #EF4135 red.
