@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aurelien.goulon.net/sitemap.xml
+
+# Nothing here is hidden. Have a look around.
+# /humans.txt
+# /whoami
+# /.well-known/security.txt

@@ -1,0 +1,28 @@
+/* TEAM */
+
+    Engineer: Aurélien Goulon
+    Site: aurelien.goulon.net
+    Location: Alberta, Canada
+
+/* SITE */
+
+    Standards: HTML5, CSS3
+    Components: None. No framework, no build step, no JavaScript.
+    Software: A text editor and git.
+    Hosting: GitHub Pages, fronted by Cloudflare.
+    DNS: Cloudflare, DNSSEC signed.
+
+/* COLOPHON */
+
+    This page is hand-written HTML served over HTTP/2 and HTTP/3, on
+    IPv4 and IPv6. The stylesheet is under 100 lines. Nothing is minified
+    because nothing needed to be.
+
+    Palette: #002654 navy, #FFFFFF white, #EF4135 red.
+    If those look familiar, they are the French flag. I am French.
+
+    Curious what your own connection looks like from here?
+    https://aurelien.goulon.net/whoami
+
+    Or from a terminal:
+    curl https://aurelien.goulon.net
