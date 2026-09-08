@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Click a link to fail it and watch traffic reroute — a tiny, dependency-free demo of what routers do constantly." />
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Watch a Network Heal Itself — Aurélien Goulon">
+    <meta property="og:description" content="Click a link to fail it and watch traffic reroute.">
+    <meta property="og:url" content="https://aurelien.goulon.net/routing.html">
+    <meta property="og:image" content="https://aurelien.goulon.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Watch a Network Heal Itself — Aurélien Goulon">
+    <meta name="twitter:description" content="Click a link to fail it and watch traffic reroute.">
+    <meta name="twitter:image" content="https://aurelien.goulon.net/og-image.png">
+
+    <title>Watch a Network Heal Itself — Aurélien Goulon</title>
+    <link rel="stylesheet" type="text/css" href="main.css" />
+    <style>
+      svg { max-width: 100%; height: auto; touch-action: manipulation; }
+      .edge { stroke: #ffffff; stroke-opacity: 0.55; stroke-width: 3; cursor: pointer; }
+      .edge.down { stroke: #ffffff; stroke-opacity: 0.25; stroke-dasharray: 6 6; }
+      .edge.path { stroke: #EF4135; stroke-opacity: 1; stroke-width: 4; }
+      .edge:hover { stroke-width: 5; }
+      .node circle { fill: #ffffff; stroke: #EF4135; stroke-width: 2; }
+      .node text { fill: #002654; font-family: "Courier New", monospace; font-size: 13px; font-weight: bold; text-anchor: middle; dominant-baseline: middle; }
+      #packet { fill: #EF4135; stroke: #ffffff; stroke-width: 1.5; }
+      #status { font-family: "Courier New", monospace; }
+      button { font-family: "Courier New", monospace; font-size: 14px; padding: 4px 10px; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <h1>Watch a Network Heal Itself</h1>
+    <p>
+      Two nodes, two paths between them. Click any link below to fail it —
+      the way a fiber cut, a bad router, or a misconfigured interface
+      would in a real network — and watch where traffic goes next. This is
+      what BGP and interior routing protocols do continuously, at a scale
+      of hundreds of thousands of networks, without anyone approving each
+      reroute by hand.
+    </p>
+
+    <svg viewBox="0 0 480 340" role="img" aria-label="Interactive network diagram">
+      <g id="edges">
+        <line class="edge" id="e-S-A" x1="60" y1="170" x2="230" y2="70" data-a="S" data-b="A"></line>
+        <line class="edge" id="e-A-T" x1="230" y1="70" x2="430" y2="170" data-a="A" data-b="T"></line>
+        <line class="edge" id="e-S-B" x1="60" y1="170" x2="230" y2="230" data-a="S" data-b="B"></line>
+        <line class="edge" id="e-B-C" x1="230" y1="230" x2="330" y2="280" data-a="B" data-b="C"></line>
+        <line class="edge" id="e-C-T" x1="330" y1="280" x2="430" y2="170" data-a="C" data-b="T"></line>
+      </g>
+      <g id="nodes">
+        <g class="node" transform="translate(60,170)"><circle r="20"></circle><text dy="1">S</text></g>
+        <g class="node" transform="translate(230,70)"><circle r="20"></circle><text dy="1">A</text></g>
+        <g class="node" transform="translate(230,230)"><circle r="20"></circle><text dy="1">B</text></g>
+        <g class="node" transform="translate(330,280)"><circle r="20"></circle><text dy="1">C</text></g>
+        <g class="node" transform="translate(430,170)"><circle r="20"></circle><text dy="1">T</text></g>
+      </g>
+      <circle id="packet" r="7"></circle>
+    </svg>
+
+    <p id="status">Shortest path: S → A → T (2 hops).</p>
+    <p><button id="reset">Restore all links</button></p>
+
+    <script>
+      var edges = Array.prototype.slice.call(document.querySelectorAll('.edge'));
+      var packet = document.getElementById('packet');
+      var statusEl = document.getElementById('status');
+      var positions = { S: [60,170], A: [230,70], B: [230,230], C: [330,280], T: [430,170] };
+
+      function adjacency() {
+        var adj = {};
+        edges.forEach(function (e) {
+          if (e.classList.contains('down')) return;
+          var a = e.dataset.a, b = e.dataset.b;
+          (adj[a] = adj[a] || []).push(b);
+          (adj[b] = adj[b] || []).push(a);
+        });
+        return adj;
+      }
+
+      function shortestPath(start, end) {
+        var adj = adjacency(), queue = [[start]], seen = { };
+        seen[start] = true;
+        while (queue.length) {
+          var path = queue.shift(), node = path[path.length - 1];
+          if (node === end) return path;
+          (adj[node] || []).forEach(function (next) {
+            if (!seen[next]) { seen[next] = true; queue.push(path.concat([next])); }
+          });
+        }
+        return null;
+      }
+
+      function edgeBetween(a, b) {
+        return edges.filter(function (e) {
+          return (e.dataset.a === a && e.dataset.b === b) || (e.dataset.a === b && e.dataset.b === a);
+        })[0];
+      }
+
+      function animatePacket(path) {
+        var i = 0;
+        function step() {
+          if (i >= path.length - 1) return;
+          var from = positions[path[i]], to = positions[path[i + 1]];
+          var start = null, duration = 500;
+          function frame(ts) {
+            if (!start) start = ts;
+            var t = Math.min(1, (ts - start) / duration);
+            packet.setAttribute('cx', from[0] + (to[0] - from[0]) * t);
+            packet.setAttribute('cy', from[1] + (to[1] - from[1]) * t);
+            if (t < 1) requestAnimationFrame(frame);
+            else { i++; step(); }
+          }
+          requestAnimationFrame(frame);
+        }
+        step();
+      }
+
+      function recompute() {
+        edges.forEach(function (e) { e.classList.remove('path'); });
+        var path = shortestPath('S', 'T');
+        if (!path) {
+          statusEl.textContent = 'No path from S to T — every remaining route is down.';
+          return;
+        }
+        for (var i = 0; i < path.length - 1; i++) {
+          edgeBetween(path[i], path[i + 1]).classList.add('path');
+        }
+        var hops = path.length - 1;
+        statusEl.textContent = 'Shortest path: ' + path.join(' → ') + ' (' + hops + (hops === 1 ? ' hop' : ' hops') + ').';
+        animatePacket(path);
+      }
+
+      edges.forEach(function (e) {
+        e.addEventListener('click', function () {
+          e.classList.toggle('down');
+          recompute();
+        });
+      });
+
+      document.getElementById('reset').addEventListener('click', function () {
+        edges.forEach(function (e) { e.classList.remove('down'); });
+        recompute();
+      });
+
+      recompute();
+    </script>
+
+    <footer>
+      <p>
+        <a href="/">Back home</a>. Or see
+        <a href="/colophon.html">how this page reaches you</a>.
+      </p>
+    </footer>
+  </body>
+</html>

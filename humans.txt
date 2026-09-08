@@ -15,7 +15,7 @@
 /* COLOPHON */
 
     This page is hand-written HTML served over HTTP/2 and HTTP/3, on
-    IPv4 and IPv6. The stylesheet is under 100 lines. Nothing is minified
+    IPv4 and IPv6. The stylesheet is under 130 lines. Nothing is minified
     because nothing needed to be.
 
     Palette: #002654 navy, #FFFFFF white, #EF4135 red.
@@ -24,5 +24,15 @@
     Curious what your own connection looks like from here?
     https://aurelien.goulon.net/whoami
 
+    Or how this page actually reaches you:
+    https://aurelien.goulon.net/colophon.html
+
+    Or watch a network reroute itself around a failure:
+    https://aurelien.goulon.net/routing.html
+
+    En français:
+    https://aurelien.goulon.net/fr/
+
     Or from a terminal:
     curl https://aurelien.goulon.net
+    dig TXT aurelien.goulon.net
