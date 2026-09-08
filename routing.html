@@ -34,7 +34,7 @@
   <body>
     <h1>Watch a Network Heal Itself</h1>
     <p>
-      Two nodes, two paths between them. Click any link below to fail it —
+      Two nodes, more than one path between them. Click any link below to fail it —
       the way a fiber cut, a bad router, or a misconfigured interface
       would in a real network — and watch where traffic goes next. This is
       what BGP and interior routing protocols do continuously, at a scale
@@ -47,6 +47,7 @@
         <line class="edge" id="e-S-A" x1="60" y1="170" x2="230" y2="70" data-a="S" data-b="A"></line>
         <line class="edge" id="e-A-T" x1="230" y1="70" x2="430" y2="170" data-a="A" data-b="T"></line>
         <line class="edge" id="e-S-B" x1="60" y1="170" x2="230" y2="230" data-a="S" data-b="B"></line>
+        <line class="edge" id="e-A-B" x1="230" y1="70" x2="230" y2="230" data-a="A" data-b="B"></line>
         <line class="edge" id="e-B-C" x1="230" y1="230" x2="330" y2="280" data-a="B" data-b="C"></line>
         <line class="edge" id="e-C-T" x1="330" y1="280" x2="430" y2="170" data-a="C" data-b="T"></line>
       </g>
@@ -64,84 +65,84 @@
     <p><button id="reset">Restore all links</button></p>
 
     <script>
-      var edges = Array.prototype.slice.call(document.querySelectorAll('.edge'));
-      var packet = document.getElementById('packet');
-      var statusEl = document.getElementById('status');
-      var positions = { S: [60,170], A: [230,70], B: [230,230], C: [330,280], T: [430,170] };
+      const edges = [...document.querySelectorAll('.edge')];
+      const packet = document.getElementById('packet');
+      const statusEl = document.getElementById('status');
+      const resetBtn = document.getElementById('reset');
+      const positions = { S: [60,170], A: [230,70], B: [230,230], C: [330,280], T: [430,170] };
 
-      function adjacency() {
-        var adj = {};
-        edges.forEach(function (e) {
-          if (e.classList.contains('down')) return;
-          var a = e.dataset.a, b = e.dataset.b;
-          (adj[a] = adj[a] || []).push(b);
-          (adj[b] = adj[b] || []).push(a);
-        });
-        return adj;
-      }
+      // -- pure: graph state derived from the DOM, no mutation --
 
-      function shortestPath(start, end) {
-        var adj = adjacency(), queue = [[start]], seen = { };
-        seen[start] = true;
+      const isUp = (edge) => !edge.classList.contains('down');
+
+      const buildAdjacency = (edgeList) =>
+        edgeList.filter(isUp).reduce((adj, e) => {
+          const { a, b } = e.dataset;
+          return { ...adj, [a]: [...(adj[a] || []), b], [b]: [...(adj[b] || []), a] };
+        }, {});
+
+      const shortestPath = (adj, start, end) => {
+        const visited = new Set([start]);
+        let queue = [[start]];
         while (queue.length) {
-          var path = queue.shift(), node = path[path.length - 1];
+          const [path, ...rest] = queue;
+          const node = path[path.length - 1];
           if (node === end) return path;
-          (adj[node] || []).forEach(function (next) {
-            if (!seen[next]) { seen[next] = true; queue.push(path.concat([next])); }
-          });
+          const unvisited = (adj[node] || []).filter((n) => !visited.has(n));
+          unvisited.forEach((n) => visited.add(n));
+          queue = [...rest, ...unvisited.map((n) => [...path, n])];
         }
         return null;
-      }
+      };
 
-      function edgeBetween(a, b) {
-        return edges.filter(function (e) {
-          return (e.dataset.a === a && e.dataset.b === b) || (e.dataset.a === b && e.dataset.b === a);
-        })[0];
-      }
+      const pairs = (path) => path.slice(0, -1).map((node, i) => [node, path[i + 1]]);
 
-      function animatePacket(path) {
-        var i = 0;
-        function step() {
-          if (i >= path.length - 1) return;
-          var from = positions[path[i]], to = positions[path[i + 1]];
-          var start = null, duration = 500;
-          function frame(ts) {
-            if (!start) start = ts;
-            var t = Math.min(1, (ts - start) / duration);
+      const describe = (path) => {
+        if (!path) return 'No path from S to T — every remaining route is down.';
+        const hops = path.length - 1;
+        return `Shortest path: ${path.join(' → ')} (${hops} ${hops === 1 ? 'hop' : 'hops'}).`;
+      };
+
+      // -- effects: DOM writes and animation, kept out of the functions above --
+
+      const edgeBetween = (a, b) =>
+        edges.find((e) => (e.dataset.a === a && e.dataset.b === b) || (e.dataset.a === b && e.dataset.b === a));
+
+      const tween = (from, to, duration) =>
+        new Promise((resolve) => {
+          let start = null;
+          const frame = (ts) => {
+            if (start === null) start = ts;
+            const t = Math.min(1, (ts - start) / duration);
             packet.setAttribute('cx', from[0] + (to[0] - from[0]) * t);
             packet.setAttribute('cy', from[1] + (to[1] - from[1]) * t);
-            if (t < 1) requestAnimationFrame(frame);
-            else { i++; step(); }
-          }
+            if (t < 1) requestAnimationFrame(frame); else resolve();
+          };
           requestAnimationFrame(frame);
-        }
-        step();
-      }
-
-      function recompute() {
-        edges.forEach(function (e) { e.classList.remove('path'); });
-        var path = shortestPath('S', 'T');
-        if (!path) {
-          statusEl.textContent = 'No path from S to T — every remaining route is down.';
-          return;
-        }
-        for (var i = 0; i < path.length - 1; i++) {
-          edgeBetween(path[i], path[i + 1]).classList.add('path');
-        }
-        var hops = path.length - 1;
-        statusEl.textContent = 'Shortest path: ' + path.join(' → ') + ' (' + hops + (hops === 1 ? ' hop' : ' hops') + ').';
-        animatePacket(path);
-      }
-
-      edges.forEach(function (e) {
-        e.addEventListener('click', function () {
-          e.classList.toggle('down');
-          recompute();
         });
-      });
 
-      document.getElementById('reset').addEventListener('click', function () {
-        edges.forEach(function (e) { e.classList.remove('down'); });
+      const animatePacket = async (path) => {
+        for (const [a, b] of pairs(path)) {
+          await tween(positions[a], positions[b], 500);
+        }
+      };
+
+      const render = (path) => {
+        edges.forEach((e) => e.classList.remove('path'));
+        if (path) pairs(path).forEach(([a, b]) => edgeBetween(a, b).classList.add('path'));
+        statusEl.textContent = describe(path);
+        if (path) animatePacket(path);
+      };
+
+      const recompute = () => render(shortestPath(buildAdjacency(edges), 'S', 'T'));
+
+      edges.forEach((e) => e.addEventListener('click', () => {
+        e.classList.toggle('down');
+        recompute();
+      }));
+
+      resetBtn.addEventListener('click', () => {
+        edges.forEach((e) => e.classList.remove('down'));
         recompute();
       });
 
