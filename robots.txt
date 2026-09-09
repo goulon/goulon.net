@@ -6,7 +6,10 @@ Sitemap: https://aurelien.goulon.net/sitemap.xml
 # Nothing here is hidden. Have a look around.
 # /humans.txt
 # /whoami
+# /fr/whoami
 # /colophon.html
+# /fr/colophon.html
 # /routing.html
+# /fr/routing.html
 # /fr/
 # /.well-known/security.txt

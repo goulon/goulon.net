@@ -2,17 +2,250 @@
  * aurelien.goulon.net — edge worker
  *
  * Two jobs:
- *   1. GET /whoami   → show visitors their own connection, annotated
- *   2. GET /         → serve a short plain-text card to curl/wget/HTTPie,
- *                      normal HTML to browsers (content negotiation)
+ *   1. GET /whoami, /fr/whoami → show visitors their own connection, annotated
+ *   2. GET /                   → serve a short plain-text card to curl/wget/HTTPie,
+ *                                normal HTML to browsers (content negotiation)
  *
- * Everything else — including non-GET requests to the two paths above —
+ * Everything else — including non-GET requests to the paths above —
  * falls through to the GitHub Pages origin untouched.
  *
  * Route: aurelien.goulon.net/*
  */
 
 const SITE = "https://aurelien.goulon.net";
+
+const WHOAMI_ROUTES = {
+  "/whoami": "en",
+  "/fr/whoami": "fr",
+};
+
+/**
+ * Marks a hand-written string as safe to render as HTML, bypassing esc().
+ * Use only for markup you wrote yourself in this file — an <em> or <strong>
+ * around a fixed phrase. Never wrap a value that came from the request
+ * (headers, request.cf, query params) in trusted(); those must always go
+ * through esc(), which happens automatically for any plain (non-trusted)
+ * value passed into an `html` template.
+ */
+const trusted = (value) => ({ __html: String(value) });
+
+const LOCALES = {
+  en: {
+    htmlLang: "en",
+    title: "Your connection — Aurélien Goulon",
+    textHeading: "WHAT I CAN SEE ABOUT YOUR CONNECTION",
+    heading: "Your connection",
+
+    labels: {
+      address: "Your address",
+      network: "Your network",
+      reached: "You reached",
+      protocol: "Protocol",
+      encryption: "Encryption",
+      roundTrip: "Round trip",
+      client: "Your client",
+    },
+
+    textLabels: {
+      address: "Your address",
+      network: "Your network",
+      reached: "Reached me at",
+      protocol: "Protocol",
+      encryption: "Encryption",
+      roundTrip: "Round trip",
+      client: "Client",
+    },
+
+    addressPrefix: "This is",
+
+    addressNote: (f) =>
+      f.ipVersion === "IPv6"
+        ? "Good — you are on the modern internet. Most people still aren’t."
+        : "The original 1981 addressing scheme. We ran out of these in 2011 and have been improvising ever since.",
+
+    networkNote: trusted(
+      "An <em>autonomous system</em>: one organisation’s slice of the internet. There are roughly 75,000 of them, and they spend all day telling each other which addresses they can reach. That constant negotiation is BGP, and it is the closest thing the internet has to a nervous system.",
+    ),
+
+    reachedValue: (f) =>
+      f.colo + (f.city ? ` — you look like ${f.city}${f.region ? `, ${f.region}` : ""}` : ""),
+
+    reachedTextValue: (f) =>
+      f.colo + (f.city ? `  (you look like ${f.city}${f.region ? `, ${f.region}` : ""})` : ""),
+
+    reachedNote: trusted(
+      "The Cloudflare edge location that answered you, out of hundreds worldwide. You didn’t pick it; routing did.",
+    ),
+
+    protocolNote: (f) => {
+      if (f.httpProtocol.includes("3")) {
+        return trusted(
+          "<strong>HTTP/3</strong> — running over QUIC on UDP rather than TCP. Faster to set up, and it survives switching from Wi-Fi to cellular without dropping.",
+        );
+      }
+
+      if (f.httpProtocol.includes("2")) {
+        return trusted(
+          "<strong>HTTP/2</strong> — many requests multiplexed over one connection instead of queued one behind the other.",
+        );
+      }
+
+      return trusted("<strong>HTTP/1.1</strong>, from 1997. Still works.");
+    },
+
+    encryptionNote: trusted(
+      "Negotiated in the first fraction of a second, before a single byte of this page moved. Nobody between us can read it.",
+    ),
+
+    roundTripNote: trusted(
+      "How long a packet takes to get from you to the edge and back. Light in fibre covers about 200 km per millisecond.",
+    ),
+
+    clientNote: trusted(
+      "The identifying string your browser or client sends with every request. It’s entirely <em>self-reported</em> — nothing on the wire verifies it, so it’s also the easiest of these facts to fake.",
+    ),
+
+    textAddressNote: (f) =>
+      f.ipVersion === "unknown"
+        ? "The address was not available on this request."
+        : `That is ${f.ipVersion}.`,
+
+    textNetworkNote: "The autonomous system that carries your traffic.",
+    textReachedNote: "The Cloudflare edge location that answered you.",
+
+    intro: `
+    You didn’t tell me any of this. It all came from the connection your
+    browser just opened to reach this page — which is roughly what every
+    server you visit can see.`,
+
+    outro: `
+    None of this is logged or stored. It is read off the live connection and
+    discarded when this response finishes. There is no database here, and no
+    cookie was set.`,
+
+    textOutro: `
+  None of this is stored. It is read from the connection you just opened
+  and thrown away when this response ends.`,
+
+    terminalPrompt: "Prefer a terminal?",
+    backLink: "Back to the site",
+    alternateLanguage: "Lire en",
+    alternateLanguageLink: "français",
+    alternateLanguageUrl: "/fr/whoami",
+    alternateLanguageCode: "fr",
+    homeUrl: "/",
+    curlUrl: "/whoami",
+  },
+
+  fr: {
+    htmlLang: "fr",
+    title: "Votre connexion — Aurélien Goulon",
+    textHeading: "CE QUE JE PEUX VOIR DE VOTRE CONNEXION",
+    heading: "Votre connexion",
+
+    labels: {
+      address: "Votre adresse",
+      network: "Votre réseau",
+      reached: "Vous arrivez via",
+      protocol: "Protocole",
+      encryption: "Chiffrement",
+      roundTrip: "Aller-retour",
+      client: "Votre client",
+    },
+
+    textLabels: {
+      address: "Votre adresse",
+      network: "Votre réseau",
+      reached: "Vous arrivez via",
+      protocol: "Protocole",
+      encryption: "Chiffrement",
+      roundTrip: "Aller-retour",
+      client: "Client",
+    },
+
+    addressPrefix: "C’est une adresse",
+
+    addressNote: (f) =>
+      f.ipVersion === "IPv6"
+        ? "Vous utilisez l’Internet moderne. Tout le monde n’y est pas encore."
+        : "Le plan d’adressage original, conçu en 1981. Nous avons épuisé les adresses en 2011 et nous improvisons depuis.",
+
+    networkNote: trusted(
+      "Un <em>système autonome</em>, c’est-à-dire la portion d’Internet gérée par une organisation. Il en existe environ 75 000, et ils passent leur temps à s’annoncer mutuellement les adresses qu’ils savent atteindre. Cette négociation permanente, c’est BGP. Ce qui ressemble le plus, sur Internet, à un système nerveux.",
+    ),
+
+    reachedValue: (f) =>
+      f.colo + (f.city ? ` — vous semblez être à ${f.city}${f.region ? `, ${f.region}` : ""}` : ""),
+
+    reachedTextValue: (f) =>
+      f.colo + (f.city ? `  (vous semblez être à ${f.city}${f.region ? `, ${f.region}` : ""})` : ""),
+
+    reachedNote: trusted(
+      "Le point de présence Cloudflare qui vous a répondu, parmi des centaines dans le monde. Vous ne l’avez pas choisi : le routage s’en est chargé.",
+    ),
+
+    protocolNote: (f) => {
+      if (f.httpProtocol.includes("3")) {
+        return trusted(
+          "<strong>HTTP/3</strong>, qui utilise QUIC sur UDP plutôt que TCP. La connexion s’établit plus vite et peut survivre au passage du Wi-Fi au réseau mobile sans être interrompue.",
+        );
+      }
+
+      if (f.httpProtocol.includes("2")) {
+        return trusted(
+          "<strong>HTTP/2</strong>, qui permet de faire passer plusieurs requêtes sur une même connexion au lieu de les mettre les unes derrière les autres.",
+        );
+      }
+
+      return trusted("<strong>HTTP/1.1</strong>, qui date de 1997. Il fait encore le travail.");
+    },
+
+    encryptionNote: trusted(
+      "Négocié pendant la première fraction de seconde, avant le moindre octet de cette page. Personne entre vous et moi ne peut le lire.",
+    ),
+
+    roundTripNote: trusted(
+      "Le temps nécessaire à un paquet pour aller de chez vous jusqu’au réseau Cloudflare et revenir. Dans une fibre, la lumière parcourt environ 200 km par milliseconde.",
+    ),
+
+    clientNote: trusted(
+      "La chaîne d’identification envoyée par votre navigateur ou votre client à chaque requête. Elle est entièrement <em>déclarative</em> : personne ne la vérifie sur le réseau, ce qui en fait aussi l’une des informations les plus faciles à falsifier.",
+    ),
+
+    textAddressNote: (f) =>
+      f.ipVersion === "unknown"
+        ? "L’adresse n’était pas disponible pour cette requête."
+        : `C’est une adresse ${f.ipVersion}.`,
+
+    textNetworkNote: "Le système autonome qui transporte votre trafic.",
+    textReachedNote: "Le point de présence Cloudflare qui vous a répondu.",
+
+    intro: `
+    Vous ne m’avez communiqué aucune de ces informations. Elles proviennent
+    toutes de la connexion que votre navigateur vient d’ouvrir pour accéder à
+    cette page. C’est, à peu près, ce que peut voir chaque serveur auquel vous
+    vous connectez.`,
+
+    outro: `
+    Rien de tout cela n’est journalisé ni enregistré. Ces informations sont
+    lues depuis la connexion en cours, puis oubliées à la fin de cette réponse.
+    Il n’y a pas de base de données ici, et aucun cookie n’a été créé.`,
+
+    textOutro: `
+  Rien de tout cela n’est enregistré. Ces informations sont lues depuis
+  la connexion que vous venez d’ouvrir, puis oubliées à la fin de cette
+  réponse.`,
+
+    terminalPrompt: "Vous préférez un terminal ?",
+    backLink: "Retour au site",
+    alternateLanguage: "Read it in",
+    alternateLanguageLink: "English",
+    alternateLanguageUrl: "/whoami",
+    alternateLanguageCode: "en",
+    homeUrl: "/fr/",
+    curlUrl: "/fr/whoami",
+  },
+};
 
 /* ── escaping ─────────────────────────────────────────────────────── */
 
@@ -23,16 +256,23 @@ const esc = (s) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
   );
 
+const isTrusted = (v) => v !== null && typeof v === "object" && "__html" in v;
+
+const renderValue = (v) => (isTrusted(v) ? v.__html : esc(v));
+
 /**
  * Tagged template for HTML fragments that mix trusted, hand-written markup
- * with dynamic values: the literal parts pass through untouched, every
- * `${...}` interpolation is escaped automatically. Use this instead of a
- * plain template literal anywhere a dynamic value (especially anything
- * client-supplied, like a header) ends up inside HTML — it removes the
- * need to remember `esc()` at each interpolation site.
+ * with dynamic values. Literal template text passes through untouched.
+ * Each `${...}` interpolation is escaped automatically UNLESS it is a
+ * value produced by `trusted()`, in which case its markup passes through
+ * as-is. This is the only path by which unescaped HTML can enter a page:
+ * a value must explicitly be wrapped in `trusted()` at its definition
+ * site, in this file, to skip escaping. A raw string, number, or anything
+ * read from `request` (headers, request.cf, query params) is never
+ * trusted by default and always goes through `esc()`.
  */
 const html = (strings, ...values) =>
-  strings.reduce((out, s, i) => out + s + (i < values.length ? esc(values[i]) : ""), "");
+  strings.reduce((out, s, i) => out + s + (i < values.length ? renderValue(values[i]) : ""), "");
 
 const isTerminalClient = (ua) =>
   /^(curl|Wget|HTTPie|got|python-requests|fetch)\b/i.test(ua.trim());
@@ -40,11 +280,14 @@ const isTerminalClient = (ua) =>
 /** Collect what Cloudflare's edge knows about this request. */
 function connectionFacts(request) {
   const cf = request.cf ?? {};
-  const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
-  const ipVersion = ip.includes(":") ? "IPv6" : "IPv4";
+  const ip = request.headers.get("CF-Connecting-IP");
+  const ipVersion =
+    !ip ? "unknown" :
+    ip.includes(":") ? "IPv6" :
+    "IPv4";
 
   return {
-    ip,
+    ip: ip ?? "unknown",
     ipVersion,
     asn: cf.asn ? `AS${cf.asn}` : "unknown",
     asOrg: cf.asOrganization ?? "unknown",
@@ -62,29 +305,30 @@ function connectionFacts(request) {
 
 /* ── /whoami : plain text (for curl) ──────────────────────────────── */
 
-function whoamiText(f) {
+function whoamiText(f, language) {
+  const t = LOCALES[language];
   const line = "─".repeat(68);
+
   return `${line}
-  WHAT I CAN SEE ABOUT YOUR CONNECTION
+  ${t.textHeading}
 ${line}
 
-  Your address        ${f.ip}
-                      That is ${f.ipVersion}.
+  ${t.textLabels.address.padEnd(20)}${f.ip}
+                      ${t.textAddressNote(f)}
 
-  Your network        ${f.asn} — ${f.asOrg}
-                      The autonomous system that carries your traffic.
+  ${t.textLabels.network.padEnd(20)}${f.asn} — ${f.asOrg}
+                      ${t.textNetworkNote}
 
-  Reached me at       ${f.colo}${f.city ? `  (you look like ${f.city}${f.region ? ", " + f.region : ""})` : ""}
-                      The closest edge location that answered you.
+  ${t.textLabels.reached.padEnd(20)}${t.reachedTextValue(f)}
+                      ${t.textReachedNote}
 
-  Protocol            ${f.httpProtocol}
-  Encryption          ${f.tlsVersion}, ${f.tlsCipher}
-${f.rtt ? `  Round trip          ~${f.rtt} ms\n` : ""}
-  Client              ${f.ua}
+  ${t.textLabels.protocol.padEnd(20)}${f.httpProtocol}
+  ${t.textLabels.encryption.padEnd(20)}${f.tlsVersion}, ${f.tlsCipher}
+${f.rtt ? `  ${t.textLabels.roundTrip.padEnd(20)}~${f.rtt} ms\n` : ""}
+  ${t.textLabels.client.padEnd(20)}${f.ua}
 
 ${line}
-  None of this is stored. It is read from the connection you just opened
-  and thrown away when this response ends.
+${t.textOutro}
 
   Aurélien Goulon — ${SITE}
 ${line}
@@ -93,7 +337,9 @@ ${line}
 
 /* ── /whoami : HTML ───────────────────────────────────────────────── */
 
-function whoamiHtml(f) {
+function whoamiHtml(f, language) {
+  const t = LOCALES[language];
+
   const row = (label, value, note) => `
       <div class="fact">
         <div class="label">${esc(label)}</div>
@@ -102,11 +348,11 @@ function whoamiHtml(f) {
       </div>`;
 
   return `<!DOCTYPE html>
-<html lang="en-US">
+<html lang="${t.htmlLang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Your connection — Aurélien Goulon</title>
+<title>${t.title}</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23002654'/%3E%3Ctext x='32' y='46' font-family='Courier New, monospace' font-size='48' fill='%23FFFFFF' text-anchor='middle'%3EA%3C/text%3E%3Crect x='12' y='50' width='40' height='4' fill='%23EF4135'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/main.css">
@@ -137,36 +383,39 @@ function whoamiHtml(f) {
 </style>
 </head>
 <body>
-  <h1>Your connection</h1>
+  <h1>${t.heading}</h1>
 
-  <p class="intro">
-    You didn’t tell me any of this. It all came from the connection your
-    browser just opened to reach this page — which is roughly what every
-    server you visit can see.
-  </p>
+  <p class="intro">${t.intro}</p>
 
-${row("Your address", f.ip, html`This is <strong>${f.ipVersion}</strong>. ${f.ipVersion === "IPv6" ? "Good — you are on the modern internet. Most people still aren’t." : "The original 1981 addressing scheme. We ran out of these in 2011 and have been improvising ever since."}`)}
+${row(
+  t.labels.address,
+  f.ip,
+  html`${t.addressPrefix} <strong>${f.ipVersion}</strong>. ${t.addressNote(f)}`,
+)}
 
-${row("Your network", `${f.asn} — ${f.asOrg}`, html`An <em>autonomous system</em>: one organisation’s slice of the internet. There are roughly 75,000 of them, and they spend all day telling each other which addresses they can reach. That constant negotiation is BGP, and it is the closest thing the internet has to a nervous system.`)}
+${row(t.labels.network, `${f.asn} — ${f.asOrg}`, html`${t.networkNote}`)}
 
-${row("You reached", f.colo + (f.city ? ` — you look like ${f.city}${f.region ? ", " + f.region : ""}` : ""), html`The nearest edge location that answered you, out of hundreds worldwide. You didn’t pick it; routing did.`)}
+${row(t.labels.reached, t.reachedValue(f), html`${t.reachedNote}`)}
 
-${row("Protocol", f.httpProtocol, html`${f.httpProtocol.includes("3") ? "HTTP/3 — running over QUIC on UDP rather than TCP. Faster to set up, and it survives switching from Wi-Fi to cellular without dropping." : f.httpProtocol.includes("2") ? "HTTP/2 — many requests multiplexed over one connection instead of queued one behind the other." : "HTTP/1.1, from 1997. Still works."}`)}
+${row(t.labels.protocol, f.httpProtocol, html`${t.protocolNote(f)}`)}
 
-${row("Encryption", `${f.tlsVersion} · ${f.tlsCipher}`, html`Negotiated in the first fraction of a second, before a single byte of this page moved. Nobody between us can read it.`)}
+${row(t.labels.encryption, `${f.tlsVersion} · ${f.tlsCipher}`, html`${t.encryptionNote}`)}
 
-${f.rtt ? row("Round trip", `~${f.rtt} ms`, html`How long a packet takes to get from you to the edge and back. Light in fibre covers about 200 km per millisecond.`) : ""}
+${f.rtt ? row(t.labels.roundTrip, `~${f.rtt} ms`, html`${t.roundTripNote}`) : ""}
 
-${row("Your client", f.ua, html`The identifying string your browser or client sends with every request. It’s entirely self-reported — nothing on the wire verifies it, so it’s also the easiest of these facts to fake.`)}
+${row(t.labels.client, f.ua, html`${t.clientNote}`)}
 
   <p class="outro">
-    None of this is logged or stored. It is read off the live connection and
-    discarded when this response finishes. There is no database here, and no
-    cookie was set.
+    ${t.outro}
     <br><br>
-    Prefer a terminal? <code>curl ${SITE}/whoami</code>
+    ${t.terminalPrompt} <code>curl ${SITE}${t.curlUrl}</code>
     <br>
-    <a href="/">Back to the site</a>
+    <a href="${t.homeUrl}">${t.backLink}</a>
+    <br><br>
+    <span lang="${t.alternateLanguageCode}">
+      ${t.alternateLanguage}
+      <a href="${t.alternateLanguageUrl}" hreflang="${t.alternateLanguageCode}">${t.alternateLanguageLink}</a>.
+    </span>
   </p>
 </body>
 </html>
@@ -222,15 +471,19 @@ export default {
       "X-Say-Hello": `${SITE}/humans.txt`,
     };
 
-    /* 1. GET /whoami */
-    if (path === "/whoami" && method === "GET") {
+    /* 1. GET /whoami and /fr/whoami */
+    const language = WHOAMI_ROUTES[path];
+
+    if (language && method === "GET") {
       const facts = connectionFacts(request);
       const wantsText =
         isTerminalClient(ua) ||
         (accept.includes("text/plain") && !accept.includes("text/html"));
 
       return new Response(
-        wantsText ? whoamiText(facts) : whoamiHtml(facts),
+        wantsText
+          ? whoamiText(facts, language)
+          : whoamiHtml(facts, language),
         {
           headers: {
             "Content-Type": wantsText
