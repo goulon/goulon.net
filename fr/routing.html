@@ -1,23 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Click a link to fail it and watch traffic reroute — a tiny, dependency-free demo of what routers do constantly." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <meta name="description" content="Cliquez sur un lien pour le couper et regardez le trafic emprunter un autre chemin : une petite démonstration autonome de ce que les routeurs font en permanence.">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23002654'/%3E%3Ctext x='32' y='46' font-family='Courier New, monospace' font-size='48' fill='%23FFFFFF' text-anchor='middle'%3EA%3C/text%3E%3Crect x='12' y='50' width='40' height='4' fill='%23EF4135'/%3E%3C/svg%3E">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Watch a Network Heal Itself — Aurélien Goulon">
-    <meta property="og:description" content="Click a link to fail it and watch traffic reroute.">
-    <meta property="og:url" content="https://aurelien.goulon.net/routing.html">
+    <meta property="og:title" content="Regardez un réseau se réparer tout seul — Aurélien Goulon">
+    <meta property="og:description" content="Coupez un lien et regardez le trafic emprunter un autre chemin.">
+    <meta property="og:url" content="https://aurelien.goulon.net/fr/routing.html">
     <meta property="og:image" content="https://aurelien.goulon.net/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:locale:alternate" content="en_US">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Watch a Network Heal Itself — Aurélien Goulon">
-    <meta name="twitter:description" content="Click a link to fail it and watch traffic reroute.">
+    <meta name="twitter:title" content="Regardez un réseau se réparer tout seul — Aurélien Goulon">
+    <meta name="twitter:description" content="Coupez un lien et regardez le trafic emprunter un autre chemin.">
     <meta name="twitter:image" content="https://aurelien.goulon.net/og-image.png">
 
-    <title>Watch a Network Heal Itself — Aurélien Goulon</title>
-    <link rel="stylesheet" type="text/css" href="main.css" />
+    <link rel="alternate" hreflang="en" href="https://aurelien.goulon.net/routing.html">
+    <link rel="alternate" hreflang="fr" href="https://aurelien.goulon.net/fr/routing.html">
+    <link rel="alternate" hreflang="x-default" href="https://aurelien.goulon.net/routing.html">
+
+    <title>Regardez un réseau se réparer tout seul — Aurélien Goulon</title>
+    <link rel="stylesheet" type="text/css" href="../main.css" />
     <style>
       svg { max-width: 100%; height: auto; touch-action: manipulation; }
       .edge { stroke: #ffffff; stroke-opacity: 0.55; stroke-width: 3; cursor: pointer; }
@@ -30,19 +41,34 @@
       #status { font-family: "Courier New", monospace; }
       button { font-family: "Courier New", monospace; font-size: 14px; padding: 4px 10px; cursor: pointer; }
     </style>
+
+    <!--
+      HTML, CSS et JavaScript écrits à la main.
+      Pas de framework, pas de dépendance, pas de build.
+
+      Cliquez sur les liens du schéma pour les désactiver.
+      Le chemin est recalculé avec une recherche en largeur, l’algorithme
+      qui permet ici de trouver le plus court trajet en nombre de sauts.
+
+      Dans un vrai réseau, le principe reste le même, même si les décisions
+      tiennent compte de bien plus de critères que le nombre de sauts.
+
+      - Aurelien
+    -->
   </head>
   <body>
-    <h1>Watch a Network Heal Itself</h1>
+    <h1>Regardez un réseau se réparer tout seul</h1>
+
     <p>
-      Two nodes, more than one path between them. Click any link below to fail it —
-      the way a fiber cut, a bad router, or a misconfigured interface
-      would in a real network — and watch where traffic goes next. This is
-      what BGP and interior routing protocols do continuously, at a scale
-      of hundreds of thousands of networks, without anyone approving each
-      reroute by hand.
+      Deux nœuds, plusieurs chemins possibles entre les deux. Cliquez sur un
+      lien ci-dessous pour le couper, comme le ferait une fibre sectionnée, un
+      routeur défaillant ou une interface mal configurée dans un vrai réseau,
+      puis regardez par où passe le trafic. C’est ce que BGP et les protocoles
+      de routage interne font en continu, à l’échelle de centaines de milliers
+      de réseaux, sans qu’une personne ait à valider chaque changement de route.
     </p>
 
-    <svg viewBox="0 0 480 340" role="img" aria-label="Interactive network diagram">
+    <svg viewBox="0 0 480 340" role="img" aria-label="Schéma de réseau interactif">
       <g id="edges">
         <line class="edge" id="e-S-A" x1="60" y1="170" x2="230" y2="70" data-a="S" data-b="A"></line>
         <line class="edge" id="e-A-T" x1="230" y1="70" x2="430" y2="170" data-a="A" data-b="T"></line>
@@ -61,8 +87,8 @@
       <circle id="packet" r="7"></circle>
     </svg>
 
-    <p id="status">Shortest path: S → A → T (2 hops).</p>
-    <p><button id="reset">Restore all links</button></p>
+    <p id="status">Chemin le plus court : S → A → T (2 sauts).</p>
+    <p><button id="reset">Rétablir tous les liens</button></p>
 
     <script>
       const edges = [...document.querySelectorAll('.edge')];
@@ -71,7 +97,7 @@
       const resetBtn = document.getElementById('reset');
       const positions = { S: [60,170], A: [230,70], B: [230,230], C: [330,280], T: [430,170] };
 
-      // -- pure: graph state derived from the DOM, no mutation --
+      // Fonctions pures : l’état du graphe est déduit du DOM, sans le modifier.
 
       const isUp = (edge) => !edge.classList.contains('down');
 
@@ -98,12 +124,12 @@
       const pairs = (path) => path.slice(0, -1).map((node, i) => [node, path[i + 1]]);
 
       const describe = (path) => {
-        if (!path) return 'No path from S to T — every remaining route is down.';
+        if (!path) return 'Aucun chemin entre S et T : toutes les routes restantes sont coupées.';
         const hops = path.length - 1;
-        return `Shortest path: ${path.join(' → ')} (${hops} ${hops === 1 ? 'hop' : 'hops'}).`;
+        return `Chemin le plus court : ${path.join(' → ')} (${hops} ${hops === 1 ? 'saut' : 'sauts'}).`;
       };
 
-      // -- effects: DOM writes and animation, kept out of the functions above --
+      // Effets : modifications du DOM et animation, isolées des fonctions ci-dessus.
 
       const edgeBetween = (a, b) =>
         edges.find((e) => (e.dataset.a === a && e.dataset.b === b) || (e.dataset.a === b && e.dataset.b === a));
@@ -151,13 +177,13 @@
 
     <footer>
       <p>
-        <a href="/">Back home</a>. Or see
-        <a href="/colophon.html">how this page reaches you</a>.
+        <a href="/fr/">Retour à l’accueil</a>. Ou découvrez
+        <a href="/fr/colophon.html">comment cette page arrive jusqu’à vous</a>.
       </p>
-      <nav class="lang-switch" aria-label="Language selection">
-        <span lang="fr">
-          Lire en
-          <a href="/fr/routing.html" hreflang="fr">français</a>.
+      <nav class="lang-switch" aria-label="Sélection de la langue">
+        <span lang="en">
+          Read it in
+          <a href="/routing.html" hreflang="en">English</a>.
         </span>
       </nav>
     </footer>

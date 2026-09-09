@@ -26,6 +26,11 @@
     <priority>0.4</priority>
   </url>
   <url>
+    <loc>https://aurelien.goulon.net/fr/routing.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://aurelien.goulon.net/whoami</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
