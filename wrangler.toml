@@ -2,6 +2,10 @@ name = "whoami"
 main = "worker/whoami-worker.js"
 compatibility_date = "2026-09-07"
 
+[observability.logs]
+enabled = false
+invocation_logs = true
+
 # Routes and custom domains for this Worker are managed in the Cloudflare
 # dashboard (Workers & Pages -> whoami -> Settings -> Domains & Routes) and
 # are intentionally not duplicated here, so connecting Git-based builds
