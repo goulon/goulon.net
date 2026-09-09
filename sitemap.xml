@@ -8,10 +8,15 @@
   <url>
     <loc>https://aurelien.goulon.net/fr/</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>1.0</priority>
   </url>
   <url>
     <loc>https://aurelien.goulon.net/colophon.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://aurelien.goulon.net/fr/colophon.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>

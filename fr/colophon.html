@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <meta name="description" content="Comment une requête vers aurelien.goulon.net arrive jusqu’à votre navigateur, de bout en bout.">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23002654'/%3E%3Ctext x='32' y='46' font-family='Courier New, monospace' font-size='48' fill='%23FFFFFF' text-anchor='middle'%3EA%3C/text%3E%3Crect x='12' y='50' width='40' height='4' fill='%23EF4135'/%3E%3C/svg%3E">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Colophon — Aurélien Goulon">
+    <meta property="og:description" content="Comment cette page arrive jusqu’à votre navigateur, de bout en bout.">
+    <meta property="og:url" content="https://aurelien.goulon.net/fr/colophon.html">
+    <meta property="og:image" content="https://aurelien.goulon.net/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:locale:alternate" content="en_US">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Colophon — Aurélien Goulon">
+    <meta name="twitter:description" content="Comment cette page arrive jusqu’à votre navigateur, de bout en bout.">
+    <meta name="twitter:image" content="https://aurelien.goulon.net/og-image.png">
+
+    <link rel="alternate" hreflang="en" href="https://aurelien.goulon.net/colophon.html">
+    <link rel="alternate" hreflang="fr" href="https://aurelien.goulon.net/fr/colophon.html">
+    <link rel="alternate" hreflang="x-default" href="https://aurelien.goulon.net/colophon.html">
+
+    <title>Colophon — Aurélien Goulon</title>
+    <link rel="stylesheet" type="text/css" href="../main.css" />
+
+    <!--
+      HTML écrit à la main. Pas de framework, pas de build, pas de JavaScript.
+      Cette page explique le trajet d’une requête jusqu’ici.
+
+      Pour le constater vous-même :
+
+        curl -I https://aurelien.goulon.net/fr/colophon.html
+        dig +dnssec aurelien.goulon.net
+        dig CAA aurelien.goulon.net
+        dig TXT aurelien.goulon.net
+
+      - Aurelien
+    -->
+  </head>
+  <body>
+    <h1>Comment cette page arrive jusqu’à vous</h1>
+
+    <p>
+      Ce site est écrit à la main, en HTML, avec une petite feuille de style.
+      Quelques requêtes par page, pas de cookies, pas de pistage. Ce qui suit
+      explique tout ce qui doit se passer pour que ces deux fichiers arrivent
+      jusqu’à votre écran.
+    </p>
+
+    <h2>1. La résolution DNS</h2>
+    <p>
+      Votre navigateur demande à un résolveur où trouver
+      <code>aurelien.goulon.net</code>. La zone DNS est signée avec DNSSEC :
+      le résolveur ne prend donc pas la réponse pour argent comptant. Il vérifie
+      une chaîne de signatures jusqu’à la racine du DNS. Si quelqu’un tentait
+      d’insérer une fausse adresse entre les deux, la chaîne serait invalide et
+      la résolution échouerait. Mieux vaut une panne visible qu’une mauvaise
+      destination qui passe inaperçue.
+    </p>
+
+    <h2>2. La réponse</h2>
+    <p>
+      La réponse pointe vers une adresse anycast de Cloudflare, l’une des mêmes
+      adresses IP utilisées par des millions d’autres domaines. Je ne choisis
+      pas le centre de données qui vous répond : BGP s’en charge, en fonction de
+      l’annonce réseau la plus proche de vous. Une personne à Calgary et une
+      autre à Marseille peuvent donc être dirigées vers deux centres de données
+      différents, sans que personne n’ait rien à configurer.
+    </p>
+
+    <h2>3. La connexion sécurisée</h2>
+    <p>
+      Votre navigateur ouvre ensuite une connexion TLS 1.3 vers cette adresse.
+      Cloudflare termine le chiffrement dans son point de présence le plus proche
+      de vous, et non sur un serveur que j’administre, puis négocie HTTP/2 ou
+      HTTP/3 selon ce que votre navigateur prend en charge. Les enregistrements
+      CAA interviennent aussi à ce stade : ils indiquent quelles autorités de
+      certification sont autorisées à délivrer un certificat pour ce domaine.
+      Une autorité compromise ou peu rigoureuse ne peut donc pas en émettre un
+      de son côté, juste parce qu’elle en a envie.
+    </p>
+
+    <h2>4. Le cache, ou l’origine</h2>
+    <p>
+      Si le réseau Cloudflare a déjà cette page dans son cache, il répond
+      immédiatement : l’étape suivante n’est même pas nécessaire. Sinon, il
+      récupère le contenu depuis l’origine, un fichier HTML statique stocké dans
+      un dépôt Git public et publié par GitHub Pages à chaque mise à jour de la
+      branche <code>main</code>. Pas de serveur à corriger, à redémarrer ou à
+      surveiller la nuit : l’origine est un fichier, pas un processus.
+    </p>
+
+    <h2>5. Ce qui arrive sur votre écran</h2>
+    <p>
+      La réponse repasse par le réseau Cloudflare, est conservée en cache pour
+      le visiteur suivant, puis arrive dans votre navigateur sous la forme de
+      deux fichiers, pas plus. Aucun script qui bloque l’affichage, aucune
+      requête vers un tiers, aucun élément qui fait bouger la page une fois que
+      vous avez commencé à la lire.
+    </p>
+
+    <footer>
+      <p>
+        <a href="/fr/">Retour à l’accueil</a>. Vous pouvez aussi voir ce que le
+        site observe de votre connexion à votre arrivée :
+        <a href="/whoami">/whoami</a>.
+      </p>
+      <nav class="lang-switch" aria-label="Sélection de la langue">
+        <span lang="en">
+          Read it in
+          <a href="/colophon.html" hreflang="en">English</a>.
+        </span>
+      </nav>
+    </footer>
+  </body>
+</html>
