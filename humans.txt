@@ -22,13 +22,13 @@
     If those look familiar, they are the French flag. I am French.
 
     Curious what your own connection looks like from here?
-    https://aurelien.goulon.net/whoami
+    https://aurelien.goulon.net/en/whoami
 
     Or how this page actually reaches you:
-    https://aurelien.goulon.net/colophon.html
+    https://aurelien.goulon.net/en/colophon.html
 
     Or watch a network reroute itself around a failure:
-    https://aurelien.goulon.net/routing.html
+    https://aurelien.goulon.net/en/routing.html
 
     En français:
     https://aurelien.goulon.net/fr/

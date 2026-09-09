@@ -11,7 +11,7 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://aurelien.goulon.net/colophon.html</loc>
+    <loc>https://aurelien.goulon.net/en/colophon.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
@@ -21,7 +21,7 @@
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://aurelien.goulon.net/routing.html</loc>
+    <loc>https://aurelien.goulon.net/en/routing.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
@@ -32,6 +32,11 @@
   </url>
   <url>
     <loc>https://aurelien.goulon.net/whoami</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://aurelien.goulon.net/en/whoami</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>

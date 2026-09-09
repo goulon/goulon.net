@@ -2,9 +2,9 @@
  * aurelien.goulon.net — edge worker
  *
  * Two jobs:
- *   1. GET /whoami, /fr/whoami → show visitors their own connection, annotated
- *   2. GET /                   → serve a short plain-text card to curl/wget/HTTPie,
- *                                normal HTML to browsers (content negotiation)
+ *   1. GET /whoami → show visitors their own connection, annotated
+ *   2. GET /       → serve a short plain-text card to curl/wget/HTTPie,
+ *                    normal HTML to browsers (content negotiation)
  *
  * Everything else — including non-GET requests to the paths above —
  * falls through to the GitHub Pages origin untouched.
@@ -16,6 +16,7 @@ const SITE = "https://aurelien.goulon.net";
 
 const WHOAMI_ROUTES = {
   "/whoami": "en",
+  "/en/whoami": "en",
   "/fr/whoami": "fr",
 };
 
@@ -133,7 +134,7 @@ const LOCALES = {
     alternateLanguageLink: "français",
     alternateLanguageUrl: "/fr/whoami",
     alternateLanguageCode: "fr",
-    homeUrl: "/",
+    homeUrl: "/en/",
     curlUrl: "/whoami",
   },
 
@@ -240,7 +241,7 @@ const LOCALES = {
     backLink: "Retour au site",
     alternateLanguage: "Read it in",
     alternateLanguageLink: "English",
-    alternateLanguageUrl: "/whoami",
+    alternateLanguageUrl: "/en/whoami",
     alternateLanguageCode: "en",
     homeUrl: "/fr/",
     curlUrl: "/fr/whoami",
@@ -355,7 +356,7 @@ function whoamiHtml(f, language) {
 <title>${t.title}</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23002654'/%3E%3Ctext x='32' y='46' font-family='Courier New, monospace' font-size='48' fill='%23FFFFFF' text-anchor='middle'%3EA%3C/text%3E%3Crect x='12' y='50' width='40' height='4' fill='%23EF4135'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/main.css">
+<link rel="stylesheet" href="/assets/main.css">
 <style>
   .fact { margin-bottom: 1.5rem; }
   .label {
