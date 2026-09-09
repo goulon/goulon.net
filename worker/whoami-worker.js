@@ -411,7 +411,8 @@ ${row(t.labels.client, f.ua, html`${t.clientNote}`)}
     ${t.terminalPrompt} <code>curl ${SITE}${t.curlUrl}</code>
     <br>
     <a href="${t.homeUrl}">${t.backLink}</a>
-    <br><br>
+  </p>
+  <p class="lang-switch">
     <span lang="${t.alternateLanguageCode}">
       ${t.alternateLanguage}
       <a href="${t.alternateLanguageUrl}" hreflang="${t.alternateLanguageCode}">${t.alternateLanguageLink}</a>.

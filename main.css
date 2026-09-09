@@ -111,12 +111,9 @@ footer p {
 }
 
 .lang-switch {
-  position: fixed;
-  right: var(--space-2);
-  bottom: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  background-color: var(--color-bg);
-  border: 1px solid rgb(255 255 255 / 0.2);
+  display: block;
+  margin-top: var(--space-2);
+  text-align: right;
   font-size: 0.875rem;
-  opacity: 1;
+  opacity: 0.75;
 }
