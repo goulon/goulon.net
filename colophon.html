@@ -1,23 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="How a request for aurelien.goulon.net actually gets answered, end to end." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta
+      name="description"
+      content="How a request for aurelien.goulon.net actually gets answered, end to end."
+    />
 
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Colophon — Aurélien Goulon">
-    <meta property="og:description" content="How a request for this page actually gets answered, end to end.">
-    <meta property="og:url" content="https://aurelien.goulon.net/colophon.html">
-    <meta property="og:image" content="https://aurelien.goulon.net/og-image.png">
+    <meta
+      property="og:type"
+      content="website"
+    />
+    <meta
+      property="og:title"
+      content="Colophon — Aurélien Goulon"
+    />
+    <meta
+      property="og:description"
+      content="How a request for this page actually gets answered, end to end."
+    />
+    <meta
+      property="og:url"
+      content="https://aurelien.goulon.net/colophon.html"
+    />
+    <meta
+      property="og:image"
+      content="https://aurelien.goulon.net/og-image.png"
+    />
 
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Colophon — Aurélien Goulon">
-    <meta name="twitter:description" content="How a request for this page actually gets answered, end to end.">
-    <meta name="twitter:image" content="https://aurelien.goulon.net/og-image.png">
+    <meta
+      name="twitter:card"
+      content="summary_large_image"
+    />
+    <meta
+      name="twitter:title"
+      content="Colophon — Aurélien Goulon"
+    />
+    <meta
+      name="twitter:description"
+      content="How a request for this page actually gets answered, end to end."
+    />
+    <meta
+      name="twitter:image"
+      content="https://aurelien.goulon.net/og-image.png"
+    />
 
     <title>Colophon — Aurélien Goulon</title>
-    <link rel="stylesheet" type="text/css" href="main.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="main.css"
+    />
   </head>
   <body>
     <h1>How This Page Reaches You</h1>
@@ -30,65 +67,55 @@
     <h2>1. The lookup</h2>
     <p>
       Your browser asks a resolver where <code>aurelien.goulon.net</code>
-      lives. This zone is DNSSEC-signed, so the resolver doesn't just take
-      the answer on faith — it validates a signature chain back to the
-      root. If anything between here and there tried to hand you a forged
-      address, the chain would break and the lookup would fail closed
-      instead of silently succeeding.
+      lives. This zone is DNSSEC-signed, so the resolver doesn't just take the
+      answer on faith — it validates a signature chain back to the root. If
+      anything between here and there tried to hand you a forged address, the
+      chain would break and the lookup would fail closed instead of silently
+      succeeding.
     </p>
 
     <h2>2. The answer</h2>
     <p>
-      What comes back is a Cloudflare anycast address — the same handful
-      of IPs that answer for millions of other domains. Which physical
-      data center actually responds isn't decided by me; it's decided by
-      BGP, live, based on whichever announcement of that address is
-      topologically closest to you. Someone in Calgary and someone in
-      Marseille get routed to two different buildings without either of
-      us configuring anything.
+      What comes back is a Cloudflare anycast address — the same handful of IPs
+      that answer for millions of other domains. Which physical data center
+      actually responds isn't decided by me; it's decided by BGP, live, based on
+      whichever announcement of that address is topologically closest to you.
+      Someone in Calgary and someone in Marseille get routed to two different
+      buildings without either of us configuring anything.
     </p>
 
     <h2>3. The handshake</h2>
     <p>
       Your browser opens a TLS 1.3 connection to that address. Cloudflare
-      terminates the encryption at the edge — the data center nearest you,
-      not a server I run — and negotiates HTTP/2 or HTTP/3 depending on
-      what your client offers. This is also where CAA records matter:
-      they constrain which certificate authorities are even allowed to
-      issue a certificate for this domain, so a compromised or careless CA
-      elsewhere on the internet can't mint one nobody authorized.
+      terminates the encryption at the edge — the data center nearest you, not a
+      server I run — and negotiates HTTP/2 or HTTP/3 depending on what your
+      client offers. This is also where CAA records matter: they constrain which
+      certificate authorities are even allowed to issue a certificate for this
+      domain, so a compromised or careless CA elsewhere on the internet can't
+      mint one nobody authorized.
     </p>
 
     <h2>4. The cache, or the origin</h2>
     <p>
-      If the edge already has this page cached, it answers immediately
-      and none of the next step happens. If not, it fetches from the
-      origin: a static HTML file sitting in a public git repository,
-      published by GitHub Pages on every push to the main branch. There is
-      no server I have to patch, restart, or lose sleep over — the origin
-      is a file, not a process.
+      If the edge already has this page cached, it answers immediately and none
+      of the next step happens. If not, it fetches from the origin: a static
+      HTML file sitting in a public git repository, published by GitHub Pages on
+      every push to the main branch. There is no server I have to patch,
+      restart, or lose sleep over — the origin is a file, not a process.
     </p>
 
     <h2>5. What lands on your screen</h2>
     <p>
-      The response comes back through the same edge, gets cached there for
-      the next visitor, and arrives in your browser as two files and
-      nothing else. No render-blocking scripts, no third-party requests,
-      no layout shift while something loads in late.
-    </p>
-
-    <h2>What it costs</h2>
-    <p>
-      $0 a month. The only recurring cost is the domain registration
-      itself, paid yearly to the registrar. Hosting, TLS, DDoS protection,
-      DNSSEC signing, and the global anycast network in between are all
-      free at this scale.
+      The response comes back through the same edge, gets cached there for the
+      next visitor, and arrives in your browser as two files and nothing else.
+      No render-blocking scripts, no third-party requests, no layout shift while
+      something loads in late.
     </p>
 
     <footer>
       <p>
-        <a href="/">Back home</a>. Or see what your own connection looks
-        like on the way in: <a href="/whoami">/whoami</a>.
+        <a href="/">Back home</a>. Or see what your own connection looks like on
+        the way in: <a href="/whoami">/whoami</a>.
       </p>
     </footer>
   </body>
